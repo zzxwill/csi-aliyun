@@ -26,7 +26,7 @@
 apiVersion: storage.k8s.io/v1beta1
 kind: CSIDriver
 metadata:
-  name: dobs.csi.digitalocean.com
+  name: bs.csi.aliyun.com
 spec:
   attachRequired: true
   podInfoOnMount: true
@@ -91,22 +91,22 @@ spec:
 kind: VolumeSnapshotClass
 apiVersion: snapshot.storage.k8s.io/v1alpha1
 metadata:
-  name: do-block-storage
+  name: aliyun-block-storage
   namespace: kube-system
   annotations:
     snapshot.storage.kubernetes.io/is-default-class: "true"
-snapshotter: dobs.csi.digitalocean.com
+snapshotter: bs.csi.aliyun.com
 
 ---
 
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: do-block-storage
+  name: aliyun-block-storage
   namespace: kube-system
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"
-provisioner: dobs.csi.digitalocean.com
+provisioner: bs.csi.aliyun.com
 
 ---
 
@@ -119,19 +119,19 @@ provisioner: dobs.csi.digitalocean.com
 kind: StatefulSet
 apiVersion: apps/v1beta1
 metadata:
-  name: csi-do-controller
+  name: csi-aliyun-controller
   namespace: kube-system
 spec:
-  serviceName: "csi-do"
+  serviceName: "csi-aliyun"
   replicas: 1
   template:
     metadata:
       labels:
-        app: csi-do-controller
-        role: csi-do
+        app: csi-aliyun-controller
+        role: csi-aliyun
     spec:
       priorityClassName: system-cluster-critical
-      serviceAccount: csi-do-controller-sa
+      serviceAccount: csi-aliyun-controller-sa
       containers:
         - name: csi-provisioner
           image: quay.io/k8scsi/csi-provisioner:v1.1.0
@@ -168,8 +168,8 @@ spec:
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
-        - name: csi-do-plugin
-          image: digitalocean/do-csi-plugin:dev
+        - name: csi-aliyun-plugin
+          image: zzxwill/do-csi-plugin:dev
           args :
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--token=$(DIGITALOCEAN_ACCESS_TOKEN)"
@@ -191,14 +191,14 @@ spec:
 kind: ServiceAccount
 apiVersion: v1
 metadata:
-  name: csi-do-controller-sa
+  name: csi-aliyun-controller-sa
   namespace: kube-system
 
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-do-provisioner-role
+  name: csi-aliyun-provisioner-role
 rules:
   - apiGroups: [""]
     resources: ["secrets"]
@@ -233,14 +233,14 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-do-provisioner-binding
+  name: csi-aliyun-provisioner-binding
 subjects:
   - kind: ServiceAccount
-    name: csi-do-controller-sa
+    name: csi-aliyun-controller-sa
     namespace: kube-system
 roleRef:
   kind: ClusterRole
-  name: csi-do-provisioner-role
+  name: csi-aliyun-provisioner-role
   apiGroup: rbac.authorization.k8s.io
 
 ---
@@ -248,7 +248,7 @@ roleRef:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-do-attacher-role
+  name: csi-aliyun-attacher-role
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]
@@ -267,14 +267,14 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-do-attacher-binding
+  name: csi-aliyun-attacher-binding
 subjects:
   - kind: ServiceAccount
-    name: csi-do-controller-sa
+    name: csi-aliyun-controller-sa
     namespace: kube-system
 roleRef:
   kind: ClusterRole
-  name: csi-do-attacher-role
+  name: csi-aliyun-attacher-role
   apiGroup: rbac.authorization.k8s.io
 
 ---
@@ -282,7 +282,7 @@ roleRef:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-do-snapshotter-role
+  name: csi-aliyun-snapshotter-role
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]
@@ -316,14 +316,14 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-do-snapshotter-binding
+  name: csi-aliyun-snapshotter-binding
 subjects:
   - kind: ServiceAccount
-    name: csi-do-controller-sa
+    name: csi-aliyun-controller-sa
     namespace: kube-system
 roleRef:
   kind: ClusterRole
-  name: csi-do-snapshotter-role
+  name: csi-aliyun-snapshotter-role
   apiGroup: rbac.authorization.k8s.io
 
 ---
@@ -337,20 +337,20 @@ roleRef:
 kind: DaemonSet
 apiVersion: apps/v1beta2
 metadata:
-  name: csi-do-node
+  name: csi-aliyun-node
   namespace: kube-system
 spec:
   selector:
     matchLabels:
-      app: csi-do-node
+      app: csi-aliyun-node
   template:
     metadata:
       labels:
-        app: csi-do-node
-        role: csi-do
+        app: csi-aliyun-node
+        role: csi-aliyun
     spec:
       priorityClassName: system-node-critical
-      serviceAccount: csi-do-node-sa
+      serviceAccount: csi-aliyun-node-sa
       hostNetwork: true
       containers:
         - name: csi-node-driver-registrar
@@ -362,12 +362,12 @@ spec:
           lifecycle:
             preStop:
               exec:
-                command: ["/bin/sh", "-c", "rm -rf /registration/dobs.csi.digitalocean.com /registration/dobs.csi.digitalocean.com-reg.sock"]
+                command: ["/bin/sh", "-c", "rm -rf /registration/bs.csi.aliyun.com /registration/bs.csi.aliyun.com-reg.sock"]
           env:
             - name: ADDRESS
               value: /csi/csi.sock
             - name: DRIVER_REG_SOCK_PATH
-              value: /var/lib/kubelet/plugins/dobs.csi.digitalocean.com/csi.sock
+              value: /var/lib/kubelet/plugins/bs.csi.aliyun.com/csi.sock
             - name: KUBE_NODE_NAME
               valueFrom:
                 fieldRef:
@@ -377,8 +377,8 @@ spec:
               mountPath: /csi/
             - name: registration-dir
               mountPath: /registration/
-        - name: csi-do-plugin
-          image: digitalocean/do-csi-plugin:dev
+        - name: csi-aliyun-plugin
+          image: zzxwill/do-csi-plugin:dev
           args :
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--url=$(DIGITALOCEAN_API_URL)"
@@ -390,7 +390,7 @@ spec:
             - name: DIGITALOCEAN_ACCESS_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: digitalocean
+                  name: aliyun
                   key: access-token
           imagePullPolicy: "Always"
           securityContext:
@@ -415,7 +415,7 @@ spec:
             type: DirectoryOrCreate
         - name: plugin-dir
           hostPath:
-            path: /var/lib/kubelet/plugins/dobs.csi.digitalocean.com
+            path: /var/lib/kubelet/plugins/bs.csi.aliyun.com
             type: DirectoryOrCreate
         - name: pods-mount-dir
           hostPath:
@@ -429,7 +429,7 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: csi-do-node-sa
+  name: csi-aliyun-node-sa
   namespace: kube-system
 
 ---
@@ -437,7 +437,7 @@ metadata:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-do-node-driver-registrar-role
+  name: csi-aliyun-node-driver-registrar-role
   namespace: kube-system
 rules:
   - apiGroups: [""]
@@ -449,12 +449,12 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-do-node-driver-registrar-binding
+  name: csi-aliyun-node-driver-registrar-binding
 subjects:
   - kind: ServiceAccount
-    name: csi-do-node-sa
+    name: csi-aliyun-node-sa
     namespace: kube-system
 roleRef:
   kind: ClusterRole
-  name: csi-do-node-driver-registrar-role
+  name: csi-aliyun-node-driver-registrar-role
   apiGroup: rbac.authorization.k8s.io          

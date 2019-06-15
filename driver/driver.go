@@ -30,6 +30,7 @@ import (
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	metadata "github.com/digitalocean/go-metadata"
 	"github.com/digitalocean/godo"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/ecs"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
@@ -38,7 +39,7 @@ import (
 const (
 	// DriverName defines the name that is used in Kubernetes and the CSI
 	// system for the canonical, official name of this plugin
-	DriverName = "dobs.csi.digitalocean.com"
+	DriverName = "bs.csi.aliyun.com"
 )
 
 var (
@@ -80,7 +81,12 @@ type Driver struct {
 // NewDriver returns a CSI plugin that contains the necessary gRPC
 // interfaces to interact with Kubernetes over unix domain sockets for
 // managaing DigitalOcean Block Storage
-func NewDriver(ep, token, url, doTag string) (*Driver, error) {
+func NewDriver(ep, token, url, doTag, accessKeyID, accessKeySecret, region2 string) (*Driver, error) {
+	client, err := ecs.NewClientWithAccessKey(region2, accessKeyID, accessKeySecret)
+
+	request := ecs.CreateCreateDiskRequest()
+
+	
 	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{
 		AccessToken: token,
 	})
@@ -219,3 +225,5 @@ func GetCommit() string {
 func GetTreeState() string {
 	return gitTreeState
 }
+
+

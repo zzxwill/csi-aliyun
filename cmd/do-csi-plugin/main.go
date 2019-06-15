@@ -22,14 +22,17 @@ import (
 	"log"
 	"os"
 
-	"github.com/digitalocean/csi-digitalocean/driver"
+	"github.com/zzxwill/csi-aliyun/driver"
 )
 
-func main() {
+func main2() {
 	var (
 		endpoint = flag.String("endpoint", "unix:///var/lib/kubelet/plugins/"+driver.DriverName+"/csi.sock", "CSI endpoint")
-		token    = flag.String("token", "", "DigitalOcean access token")
-		url      = flag.String("url", "https://api.digitalocean.com/", "DigitalOcean API URL")
+		// token    = flag.String("token", "", "DigitalOcean access token")
+		accessKeyID = flag.String("access-key-id", "", "Aliyun Access Key ID")
+		accessKeySecret = flag.String("access-key-secret", "", "Aliyun Access Key Secret")
+		region = flag.String("region", "cn-beijing", "Region")
+		// url      = flag.String("url", "https://api.digitalocean.com/", "DigitalOcean API URL")
 		doTag    = flag.String("do-tag", "", "Tag DigitalOcean volumes on Create/Attach")
 		version  = flag.Bool("version", false, "Print the version and exit.")
 	)
@@ -40,7 +43,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	drv, err := driver.NewDriver(*endpoint, *token, *url, *doTag)
+	drv, err := driver.NewDriver(*endpoint, *token, *url, *doTag, *accessKeyID, *accessKeySecret, *region)
 	if err != nil {
 		log.Fatalln(err)
 	}

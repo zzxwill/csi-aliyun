@@ -51,19 +51,19 @@ test-integration:
 .PHONY: build
 build:
 	@echo "==> Building the docker image"
-	@docker build -t digitalocean/do-csi-plugin:$(VERSION) cmd/do-csi-plugin -f cmd/do-csi-plugin/Dockerfile
+	@docker build -t zzxwill/do-csi-plugin:$(VERSION) cmd/do-csi-plugin -f cmd/do-csi-plugin/Dockerfile
 
 .PHONY: push
 push:
 ifeq ($(shell [[ $(BRANCH) != "master" && $(VERSION) != "dev" ]] && echo true ),true)
 	@echo "ERROR: Publishing image with a SEMVER version '$(VERSION)' is only allowed from master"
 else
-	@echo "==> Publishing digitalocean/do-csi-plugin:$(VERSION)"
-	@docker push digitalocean/do-csi-plugin:$(VERSION)
-	@echo "==> Your image is now available at digitalocean/do-csi-plugin:$(VERSION)"
+	@echo "==> Publishing zzxwill/do-csi-plugin:$(VERSION)"
+	@docker push zzxwill/do-csi-plugin:$(VERSION)
+	@echo "==> Your image is now available at zzxwill/do-csi-plugin:$(VERSION)"
 endif
 
 .PHONY: clean
-clean:
-	@echo "==> Cleaning releases"
-	@GOOS=${OS} go clean -i -x ./...
+# clean:
+# 	@echo "==> Cleaning releases"
+# 	@GOOS=${OS} go clean -i -x ./...
